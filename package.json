@@ -1,0 +1,20 @@
+{
+  "name": "dopamine-platform",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:web\" \"npm run dev:api\"",
+    "dev:web": "npm run dev --workspace=web",
+    "dev:api": "npm run dev --workspace=api",
+    "build": "npm run build --workspaces",
+    "build:web": "npm run build --workspace=web",
+    "build:api": "npm run build --workspace=api"
+  },
+  "workspaces": [
+    "apps/web",
+    "apps/api"
+  ],
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
