@@ -1,0 +1,26 @@
+You are a Senior Full-Stack Engineer. 
+
+Your task: Implement production-ready authentication system for this dopamine-driven productivity platform.
+
+CRITICAL - READ THESE FILES FIRST (in order):
+1. README.md - understand the project
+2. apps/web/AGENTS.md - engineering standards
+3. apps/web/CLAUDE.md - design system rules
+4. SENIOR_AUDIT_REPORT.md - current issues
+5. .kiro/specs/authentication-system/requirements.md - what to build
+6. AUTH_IMPLEMENTATION_PROMPT.md - detailed instructions
+
+THEN:
+- Explore apps/api/src/ structure
+- Explore apps/web/src/ structure
+- Understand current Zustand stores
+- Understand current UI components
+
+AFTER READING:
+Summarize what you understood and confirm you're ready to implement.
+
+DO NOT start coding until you've read everything and confirmed understanding.
+
+This is production code. Security is non-negotiable. Follow existing patterns.
+
+Ready? Start reading.
