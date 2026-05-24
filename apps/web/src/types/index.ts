@@ -12,14 +12,6 @@ export interface Task {
   xpValue: number;
 }
 
-export interface User {
-  id: string;
-  email: string;
-  xp: number;
-  level: number;
-  streak: number;
-}
-
 export interface DailyProgress {
   completedTasks: number;
   totalTasks: number;

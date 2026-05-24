@@ -11,6 +11,8 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
   JWT_EXPIRES_IN: z.string().default('7d'),
   FRONTEND_URL: z.string().url().default('http://localhost:3000'),
+  TELEGRAM_BOT_TOKEN: z.string().min(1, 'TELEGRAM_BOT_TOKEN is required'),
+  TELEGRAM_BOT_USERNAME: z.string().min(1, 'TELEGRAM_BOT_USERNAME is required'),
 });
 
 // Validate environment variables
@@ -33,4 +35,8 @@ export const env = {
     expiresIn: envVars.JWT_EXPIRES_IN,
   },
   frontendUrl: envVars.FRONTEND_URL,
+  telegram: {
+    botToken: envVars.TELEGRAM_BOT_TOKEN,
+    botUsername: envVars.TELEGRAM_BOT_USERNAME,
+  },
 } as const;

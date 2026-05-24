@@ -19,8 +19,10 @@ export const signup = asyncHandler(async (req: Request, res: Response) => {
     status: 'success',
     data: {
       user: result.user,
+      verificationLink: result.verificationLink,
+      telegramVerified: false,
     },
-    message: 'Account created successfully',
+    message: 'Account created successfully. Please verify with Telegram.',
   });
 });
 
@@ -75,6 +77,24 @@ export const getMe = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json({
     status: 'success',
     data: { user },
+  });
+});
+
+/**
+ * GET /api/auth/verification-status
+ * Check Telegram verification status
+ */
+export const getVerificationStatus = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+
+  const user = await authService.getProfile(userId);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      telegramVerified: user.telegramVerified || false,
+      telegramUsername: user.telegramUsername || null,
+    },
   });
 });
 

@@ -5,18 +5,24 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Container } from '@/components/layout/Container';
 import { fadeInUp } from '@/lib/animations/variants';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 export default function Home() {
   const router = useRouter();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
-    // Redirect to dashboard after brief intro
+    // Redirect based on auth status
     const timer = setTimeout(() => {
-      router.push('/dashboard');
-    }, 2000);
+      if (isAuthenticated) {
+        router.push('/dashboard');
+      } else {
+        router.push('/login');
+      }
+    }, 1500);
 
     return () => clearTimeout(timer);
-  }, [router]);
+  }, [router, isAuthenticated]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center">
@@ -49,7 +55,7 @@ export default function Home() {
             }}
             className="text-sm text-zinc-500"
           >
-            Loading your dashboard...
+            Loading...
           </motion.div>
         </motion.div>
       </Container>

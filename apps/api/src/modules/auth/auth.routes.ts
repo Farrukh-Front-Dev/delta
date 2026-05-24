@@ -35,6 +35,8 @@ router.post('/logout', authController.logout);
 // Protected routes (require authentication)
 router.get('/me', authMiddleware, authController.getMe);
 
+router.get('/verification-status', authMiddleware, authController.getVerificationStatus);
+
 router.put(
   '/profile',
   authMiddleware,

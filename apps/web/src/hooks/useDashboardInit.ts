@@ -1,18 +1,9 @@
 import { useEffect } from 'react';
-import { useUserStore } from '@/stores/useUserStore';
 import { useTaskStore } from '@/stores/useTaskStore';
 import { Task } from '@/types';
 import { initAudio } from '@/lib/audio/sounds';
 
-// Demo data
-const DEMO_USER = {
-  id: '1',
-  email: 'demo@dopamine.app',
-  xp: 0,
-  level: 1,
-  streak: 0,
-};
-
+// Demo tasks for new users
 const DEMO_TASKS: Task[] = [
   {
     id: '1',
@@ -42,17 +33,9 @@ const DEMO_TASKS: Task[] = [
  * Extracted from dashboard page for better separation of concerns
  */
 export const useDashboardInit = () => {
-  const user = useUserStore((state) => state.user);
   const tasks = useTaskStore((state) => state.tasks);
 
-  // Initialize user
-  useEffect(() => {
-    if (!user) {
-      useUserStore.getState().setUser(DEMO_USER);
-    }
-  }, [user]);
-
-  // Initialize tasks
+  // Initialize tasks (only if empty - for demo purposes)
   useEffect(() => {
     if (tasks.length === 0) {
       useTaskStore.getState().setTasks(DEMO_TASKS);

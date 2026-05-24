@@ -29,6 +29,8 @@ export interface UserProfile {
   level: number;
   streak: number;
   createdAt: Date;
+  telegramVerified?: boolean;
+  telegramUsername?: string | null;
 }
 
 export interface UpdateProfileRequest {

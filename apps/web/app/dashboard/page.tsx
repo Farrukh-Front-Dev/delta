@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Plus } from 'lucide-react';
+import { Plus, LogOut } from 'lucide-react';
 import { Container } from '@/components/layout/Container';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -11,23 +11,27 @@ import { TaskList } from '@/components/features/dashboard/TaskList';
 import { StatsBar } from '@/components/features/dashboard/StatsBar';
 import { CompletionCelebration } from '@/components/features/dashboard/CompletionCelebration';
 import { PerformanceProfiler } from '@/components/debug/PerformanceProfiler';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { TelegramVerification } from '@/components/auth/TelegramVerification';
 import { useTaskStore } from '@/stores/useTaskStore';
-import { useUserStore } from '@/stores/useUserStore';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { useAuth } from '@/hooks/useAuth';
 import { useDailyProgress } from '@/hooks/useDailyProgress';
 import { useDashboardInit } from '@/hooks/useDashboardInit';
 import { performanceMonitor } from '@/lib/performance/profiler';
 import { TIMING } from '@/lib/animations/constants';
 import { Task } from '@/types';
 
-export default function DashboardPage() {
+function DashboardContent() {
+  const { logout, verificationLink } = useAuth();
+  
   // Granular Zustand selectors to prevent unnecessary re-renders
   const tasks = useTaskStore((state) => state.tasks);
   const addTask = useTaskStore((state) => state.addTask);
   const toggleTask = useTaskStore((state) => state.toggleTask);
   const lastCompletedXp = useTaskStore((state) => state.lastCompletedXp);
   
-  const user = useUserStore((state) => state.user);
-  const addXp = useUserStore((state) => state.addXp);
+  const user = useAuthStore((state) => state.user);
   
   const dailyProgress = useDailyProgress(tasks);
   const [newTaskTitle, setNewTaskTitle] = useState('');
@@ -59,16 +63,13 @@ export default function DashboardPage() {
     toggleTask(taskId);
     const task = tasks.find((t) => t.id === taskId);
     if (task && !task.completed) {
-      setTimeout(() => {
-        addXp(task.xpValue);
-      }, TIMING.xpCounterStart);
-
+      // Note: XP will be synced with backend in future
       setShowCelebration(true);
       setTimeout(() => setShowCelebration(false), TIMING.xpCounterStart);
     }
 
     endMeasure();
-  }, [tasks, toggleTask, addXp]);
+  }, [tasks, toggleTask]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setNewTaskTitle(e.target.value);
@@ -77,6 +78,10 @@ export default function DashboardPage() {
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') handleAddTask();
   }, [handleAddTask]);
+
+  const handleLogout = useCallback(() => {
+    logout();
+  }, [logout]);
 
   // Memoize user stats to prevent StatsBar re-renders
   const userStats = useMemo(() => {
@@ -100,17 +105,41 @@ export default function DashboardPage() {
             className="space-y-8"
           >
             {/* Header */}
-            <div className="space-y-2">
-              <h1 className="text-4xl font-bold text-white">Daily Dashboard</h1>
-              <p className="text-zinc-500">
-                Complete tasks to fill your energy core
-              </p>
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <h1 className="text-4xl font-bold text-white">
+                  {user.name ? `Welcome back, ${user.name}` : 'Daily Dashboard'}
+                </h1>
+                <p className="text-zinc-500">
+                  Complete tasks to fill your energy core
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="md"
+                onClick={handleLogout}
+                className="gap-2"
+              >
+                <LogOut className="h-5 w-5" />
+                Logout
+              </Button>
             </div>
 
             {/* Stats Bar */}
             <PerformanceProfiler id="StatsBar">
               <StatsBar {...userStats} />
             </PerformanceProfiler>
+
+            {/* Telegram Verification */}
+            {verificationLink && !user.telegramVerified && (
+              <TelegramVerification verificationLink={verificationLink} />
+            )}
+            {user.telegramVerified && (
+              <TelegramVerification 
+                verificationLink="" 
+                isVerified={true}
+              />
+            )}
 
             {/* Main Content Grid */}
             <div className="grid gap-8 lg:grid-cols-2">
@@ -163,5 +192,13 @@ export default function DashboardPage() {
         />
       </div>
     </PerformanceProfiler>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <ProtectedRoute>
+      <DashboardContent />
+    </ProtectedRoute>
   );
 }

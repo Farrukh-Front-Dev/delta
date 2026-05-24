@@ -2,6 +2,7 @@ import { prisma } from '../../lib/prisma';
 import { hashPassword, comparePassword } from '../../utils/hash.util';
 import { generateToken } from '../../utils/jwt.util';
 import { sanitizeEmail, sanitizeString } from '../../utils/sanitize.util';
+import { generateVerificationToken, getVerificationLink } from '../../lib/telegram';
 import { AppError } from '../../middlewares/errorHandler';
 import {
   SignupRequest,
@@ -16,7 +17,7 @@ export class AuthService {
   /**
    * Register a new user
    */
-  async signup(data: SignupRequest): Promise<AuthResponse> {
+  async signup(data: SignupRequest): Promise<AuthResponse & { verificationLink?: string }> {
     const { email, password, name } = data;
 
     // Sanitize inputs
@@ -35,12 +36,18 @@ export class AuthService {
     // Hash password
     const hashedPassword = await hashPassword(password);
 
+    // Generate verification token (expires in 24 hours)
+    const verificationToken = generateVerificationToken();
+    const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
     // Create user
     const user = await prisma.user.create({
       data: {
         email: sanitizedEmail,
         password: hashedPassword,
         name: sanitizedName,
+        verificationToken,
+        verificationExpiry,
       },
     });
 
@@ -49,6 +56,9 @@ export class AuthService {
       userId: user.id,
       email: user.email,
     });
+
+    // Get Telegram verification link
+    const verificationLink = getVerificationLink(verificationToken);
 
     return {
       user: {
@@ -60,6 +70,7 @@ export class AuthService {
         streak: user.streak,
       },
       token,
+      verificationLink,
     };
   }
 
@@ -121,6 +132,8 @@ export class AuthService {
         level: true,
         streak: true,
         createdAt: true,
+        telegramVerified: true,
+        telegramUsername: true,
       },
     });
 
