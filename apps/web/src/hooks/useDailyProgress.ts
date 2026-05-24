@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Task } from '@/types';
+import { Task } from '@/stores/useTaskStore';
 
 export const useDailyProgress = (tasks: Task[]) => {
   return useMemo(() => {

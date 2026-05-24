@@ -2,7 +2,7 @@
 
 import { memo, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Task } from '@/types';
+import { Task } from '@/stores/useTaskStore';
 import { TaskItem } from './TaskItem';
 
 interface TaskListProps {

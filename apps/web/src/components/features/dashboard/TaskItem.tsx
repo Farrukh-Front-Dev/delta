@@ -3,7 +3,7 @@
 import { memo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
-import { Task } from '@/types';
+import { Task } from '@/stores/useTaskStore';
 import { cn } from '@/lib/utils/cn';
 import { playSound } from '@/lib/audio/sounds';
 

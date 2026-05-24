@@ -4,14 +4,6 @@ export interface ApiResponse<T = any> {
   message?: string;
 }
 
-export interface Task {
-  id: string;
-  title: string;
-  completed: boolean;
-  createdAt: string;
-  xpValue: number;
-}
-
 export interface DailyProgress {
   completedTasks: number;
   totalTasks: number;

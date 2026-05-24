@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, LogOut } from 'lucide-react';
 import { Container } from '@/components/layout/Container';
@@ -17,10 +17,8 @@ import { useTaskStore } from '@/stores/useTaskStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useAuth } from '@/hooks/useAuth';
 import { useDailyProgress } from '@/hooks/useDailyProgress';
-import { useDashboardInit } from '@/hooks/useDashboardInit';
 import { performanceMonitor } from '@/lib/performance/profiler';
 import { TIMING } from '@/lib/animations/constants';
-import { Task } from '@/types';
 
 function DashboardContent() {
   const { logout, verificationLink } = useAuth();
@@ -29,47 +27,58 @@ function DashboardContent() {
   const tasks = useTaskStore((state) => state.tasks);
   const addTask = useTaskStore((state) => state.addTask);
   const toggleTask = useTaskStore((state) => state.toggleTask);
+  const fetchTasks = useTaskStore((state) => state.fetchTasks);
   const lastCompletedXp = useTaskStore((state) => state.lastCompletedXp);
   
   const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
   
   const dailyProgress = useDailyProgress(tasks);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [showCelebration, setShowCelebration] = useState(false);
 
-  // Initialize dashboard
-  useDashboardInit();
+  // Fetch tasks on mount
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
 
   // Stable callback references
-  const handleAddTask = useCallback(() => {
+  const handleAddTask = useCallback(async () => {
     if (!newTaskTitle.trim()) return;
 
-    const newTask: Task = {
-      id: Date.now().toString(),
-      title: newTaskTitle,
-      completed: false,
-      createdAt: new Date().toISOString(),
-      xpValue: 25,
-    };
-
-    addTask(newTask);
-    setNewTaskTitle('');
+    try {
+      await addTask(newTaskTitle.trim(), 25);
+      setNewTaskTitle('');
+    } catch (error) {
+      console.error('Failed to add task:', error);
+    }
   }, [newTaskTitle, addTask]);
 
-  const handleTaskComplete = useCallback((taskId: string) => {
+  const handleTaskComplete = useCallback(async (taskId: string) => {
     // Measure interaction latency
     const endMeasure = performanceMonitor.startInteraction('task-completion');
 
-    toggleTask(taskId);
-    const task = tasks.find((t) => t.id === taskId);
-    if (task && !task.completed) {
-      // Note: XP will be synced with backend in future
-      setShowCelebration(true);
-      setTimeout(() => setShowCelebration(false), TIMING.xpCounterStart);
+    try {
+      const result = await toggleTask(taskId);
+      
+      // Update user XP and level
+      if (user && result.xpGained > 0) {
+        setUser({
+          ...user,
+          xp: result.newXp,
+          level: result.newLevel,
+        });
+
+        // Show celebration
+        setShowCelebration(true);
+        setTimeout(() => setShowCelebration(false), TIMING.xpCounterStart);
+      }
+    } catch (error) {
+      console.error('Failed to toggle task:', error);
     }
 
     endMeasure();
-  }, [tasks, toggleTask]);
+  }, [toggleTask, user, setUser]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setNewTaskTitle(e.target.value);
